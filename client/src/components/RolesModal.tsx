@@ -6,6 +6,8 @@ import type { Guild, Role } from "../types";
 import Modal from "./Modal";
 import { PlusIcon, TrashIcon, ArrowUpIcon, ArrowDownIcon } from "./Icons";
 
+declare const __APP_VERSION__: string;
+
 const TOGGLES: { bit: bigint; key: string }[] = [
   { bit: 1n << 3n, key: "roles.perm.administrator" },
   { bit: 1n << 4n, key: "roles.perm.manageChannels" },
@@ -61,7 +63,7 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
   }
 
   return (
-    <Modal title={`🛡 ${t("roles.title")}`} onClose={onClose} large>
+    <Modal title={`🛡 ${t("roles.title")}  v${__APP_VERSION__}`} onClose={onClose} large>
       <div className="flex gap-5">
         <div className="w-44 shrink-0">
           <div className="mb-2 text-xs font-bold uppercase tracking-wide text-discord-muted">
