@@ -18,7 +18,12 @@ const SWATCHES = ["#99aab5", "#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e91e6
 export default function RolesModal({ guildId, onClose }: { guildId: string; onClose: () => void }) {
   const { t } = useI18n();
   const qc = useQueryClient();
-  const { data: guild } = useQuery<Guild>({ queryKey: ["guild", guildId], enabled: false });
+  // THE FIX: was `enabled: false` — never fetched data, modal was always empty
+  const { data: guild } = useQuery<Guild>({
+    queryKey: ["guild", guildId],
+    queryFn: () => api<Guild>(`/api/guilds/${guildId}`),
+    staleTime: 30_000,
+  });
   const roles = [...(guild?.roles ?? [])].sort((a, b) => b.position - a.position);
   const [selectedId, setSelectedId] = useState<string | null>(roles[0]?.id ?? null);
   const selected = roles.find((r) => r.id === selectedId) ?? roles[0] ?? null;
@@ -58,10 +63,9 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
   return (
     <Modal title={`🛡 ${t("roles.title")}`} onClose={onClose} wider>
       <div className="flex gap-5">
-        {/* ── Sidebar ── */}
         <div className="w-44 shrink-0">
           <div className="mb-2 text-xs font-bold uppercase tracking-wide text-discord-muted">
-            {t("roles.title")}
+            {t("roles.title")} — {roles.length}
           </div>
           <div className="space-y-0.5">
             {roles.map((r) => (
@@ -85,10 +89,8 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
           </button>
         </div>
 
-        {/* ── Editor ── */}
         {selected && (
           <div className="min-w-0 flex-1 space-y-5">
-            {/* Name */}
             <div>
               <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-discord-muted">
                 {t("roles.title")}
@@ -115,7 +117,6 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
               </div>
             </div>
 
-            {/* Color */}
             <div>
               <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-discord-muted">
                 {t("roles.color")}
@@ -127,13 +128,11 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
                     onClick={() => patchRole(selected.id, { color: c })}
                     className={`h-8 w-8 cursor-pointer rounded-full ring-2 transition hover:scale-110 ${selected.color === c ? "ring-white" : "ring-transparent hover:ring-white/40"}`}
                     style={{ backgroundColor: c }}
-                    title={c}
                   />
                 ))}
               </div>
             </div>
 
-            {/* Permissions */}
             <div>
               <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-discord-muted">
                 {t("roles.permissions")}
@@ -147,9 +146,7 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
                       onClick={() => togglePerm(selected, bit)}
                       className="flex w-full items-center justify-between gap-3 rounded bg-discord-card px-3 py-2.5 text-sm text-discord-text hover:bg-discord-hover transition"
                     >
-                      <span className="overflow-hidden text-ellipsis whitespace-nowrap select-none">
-                        {t(key as never)}
-                      </span>
+                      <span className="select-none">{t(key as never)}</span>
                       <span className={`h-5 w-9 shrink-0 rounded-full transition ${on ? "bg-discord-accent" : "bg-discord-deep"}`}>
                         <span className={`block h-4 w-4 translate-y-0.5 rounded-full bg-white shadow transition-transform ${on ? "translate-x-4" : "translate-x-0.5"}`} />
                       </span>
@@ -164,3 +161,4 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
     </Modal>
   );
 }
+
