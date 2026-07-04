@@ -14,6 +14,13 @@ export interface ChangelogEntry {
 // Newest first. Add a new entry whenever you bump the version.
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "0.10.1",
+    date: "2026-07-04",
+    items: [
+      "🔧 Починена модалка ролей: текст прав больше не обрезается, поле ввода не сжимается",
+    ],
+  },
+  {
     version: "0.10.0",
     date: "2026-07-03",
     items: [
