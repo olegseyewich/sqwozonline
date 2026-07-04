@@ -58,7 +58,7 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
   }
 
   return (
-    <Modal title={`🛡 ${t("roles.title")}`} onClose={onClose} wide>
+    <Modal title={`🛡 ${t("roles.title")}`} onClose={onClose} wider>
       <div className="flex gap-4">
         <div className="w-40 shrink-0 space-y-1">
           {roles.map((r) => (
@@ -90,14 +90,14 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
                 onChange={(e) => patchRole(selected.id, { name: e.target.value })}
                 className="min-w-0 flex-1 rounded bg-discord-deep px-3 py-2 text-discord-text outline-none focus:ring-1 focus:ring-discord-accent disabled:opacity-60"
               />
-              <button onClick={() => moveRole(selected.id, "up")} title={t("roles.moveUp")} className="rounded p-1.5 text-discord-muted hover:bg-discord-hover hover:text-white">
+              <button onClick={() => moveRole(selected.id, "up")} title={t("roles.moveUp")} className="shrink-0 rounded p-1.5 text-discord-muted hover:bg-discord-hover hover:text-white">
                 <ArrowUpIcon size={16} />
               </button>
-              <button onClick={() => moveRole(selected.id, "down")} title={t("roles.moveDown")} className="rounded p-1.5 text-discord-muted hover:bg-discord-hover hover:text-white">
+              <button onClick={() => moveRole(selected.id, "down")} title={t("roles.moveDown")} className="shrink-0 rounded p-1.5 text-discord-muted hover:bg-discord-hover hover:text-white">
                 <ArrowDownIcon size={16} />
               </button>
               {!selected.isDefault && (
-                <button onClick={() => deleteRole(selected.id)} title={t("roles.delete")} className="rounded p-1.5 text-discord-muted hover:bg-discord-danger hover:text-white">
+                <button onClick={() => deleteRole(selected.id)} title={t("roles.delete")} className="shrink-0 rounded p-1.5 text-discord-muted hover:bg-discord-danger hover:text-white">
                   <TrashIcon size={16} />
                 </button>
               )}
@@ -126,9 +126,9 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
                     <button
                       key={key}
                       onClick={() => togglePerm(selected, bit)}
-                      className="flex w-full items-center justify-between rounded bg-discord-card px-3 py-2 text-sm text-discord-text hover:bg-discord-hover"
+                      className="flex w-full items-center gap-2 rounded bg-discord-card px-3 py-2 text-sm text-discord-text text-left hover:bg-discord-hover"
                     >
-                      {t(key as never)}
+                      <span className="min-w-0 flex-1 truncate">{t(key as never)}</span>
                       <span className={`h-5 w-9 shrink-0 rounded-full transition ${on ? "bg-discord-accent" : "bg-discord-deep"}`}>
                         <span className={`block h-4 w-4 translate-y-0.5 rounded-full bg-white transition ${on ? "translate-x-4" : "translate-x-0.5"}`} />
                       </span>

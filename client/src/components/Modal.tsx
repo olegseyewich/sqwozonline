@@ -6,11 +6,13 @@ export default function Modal({
   onClose,
   children,
   wide,
+  wider,
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
   wide?: boolean;
+  wider?: boolean;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -24,7 +26,7 @@ export default function Modal({
       onMouseDown={onClose}
     >
       <div
-        className={`cc-pop w-full ${wide ? "max-w-2xl" : "max-w-md"} rounded-lg bg-discord-bg shadow-2xl`}
+        className={`cc-pop w-full ${wider ? "max-w-3xl" : wide ? "max-w-2xl" : "max-w-md"} rounded-lg bg-discord-bg shadow-2xl`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-black/20 px-5 py-4">
