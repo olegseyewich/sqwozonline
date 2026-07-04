@@ -126,9 +126,9 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
                     <button
                       key={key}
                       onClick={() => togglePerm(selected, bit)}
-                      className="flex w-full items-center gap-2 rounded bg-discord-card px-3 py-2 text-sm text-discord-text text-left hover:bg-discord-hover"
+                      className="flex w-full items-center justify-between gap-3 rounded bg-discord-card px-3 py-2 text-sm text-discord-text hover:bg-discord-hover"
                     >
-                      <span className="min-w-0 flex-1 truncate">{t(key as never)}</span>
+                      <span className="min-w-0 truncate">{t(key as never)}</span>
                       <span className={`h-5 w-9 shrink-0 rounded-full transition ${on ? "bg-discord-accent" : "bg-discord-deep"}`}>
                         <span className={`block h-4 w-4 translate-y-0.5 rounded-full bg-white transition ${on ? "translate-x-4" : "translate-x-0.5"}`} />
                       </span>
