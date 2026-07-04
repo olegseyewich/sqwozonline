@@ -1,0 +1,240 @@
+// Concord data model — SQLite (local file, zero external services).
+// SQLite keeps self-hosting trivial: one file, no Postgres/Redis to run.
+// Enum-like fields are plain strings (SQLite has no native enums).
+//   ChannelType:    TEXT | VOICE | CATEGORY | ANNOUNCEMENT | FORUM | STAGE
+//   PresenceStatus: ONLINE | IDLE | DND | OFFLINE
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  username      String
+  discriminator String   @default("0000") // username#0000 (legacy-style tag)
+  email         String   @unique
+  passwordHash  String
+  displayName   String?
+  avatarUrl     String?
+  bannerUrl     String?
+  accentColor   String?
+  bio           String?
+  status        String   @default("OFFLINE")
+  customStatus  String?
+  pronouns      String?
+  resetCode     String?
+  resetExpires  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  ownedGuilds   Guild[]         @relation("GuildOwner")
+  memberships   GuildMember[]
+  messages      Message[]
+  refreshTokens RefreshToken[]
+  dmChannels    Channel[]       @relation("DMParticipants")
+  sentFriendRequests     Friendship[] @relation("FriendRequester")
+  receivedFriendRequests Friendship[] @relation("FriendAddressee")
+
+  @@unique([username, discriminator])
+  @@index([email])
+}
+
+model Friendship {
+  id          String   @id @default(cuid())
+  requesterId String
+  requester   User     @relation("FriendRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addresseeId String
+  addressee   User     @relation("FriendAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+  status      String   @default("PENDING") // PENDING | ACCEPTED
+  createdAt   DateTime @default(now())
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  revoked   Boolean  @default(false)
+  device    String? // short label from the login User-Agent ("Windows · приложение ПК")
+
+  @@index([userId])
+}
+
+model Guild {
+  id          String   @id @default(cuid())
+  name        String
+  iconUrl     String?
+  bannerUrl   String?
+  vanityUrl   String?  @unique
+  description String?
+  ownerId     String
+  owner       User     @relation("GuildOwner", fields: [ownerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  channels    Channel[]
+  members     GuildMember[]
+  roles       Role[]
+  invites     Invite[]
+  emojis      GuildEmoji[]
+
+  @@index([ownerId])
+}
+
+model GuildEmoji {
+  id        String   @id @default(cuid())
+  guildId   String
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  name      String // used as :name: in messages — letters/digits/underscore only
+  url       String
+  createdAt DateTime @default(now())
+
+  @@unique([guildId, name])
+  @@index([guildId])
+}
+
+model Invite {
+  code      String    @id
+  guildId   String
+  guild     Guild     @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  inviterId String
+  uses      Int       @default(0)
+  maxUses   Int       @default(0) // 0 = unlimited
+  expiresAt DateTime?             // null = never expires
+  createdAt DateTime  @default(now())
+
+  @@index([guildId])
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  name        String
+  color       String   @default("#99aab5")
+  // Permission bitfield stored as string (BigInt range, 53+ flags).
+  permissions String   @default("0")
+  position    Int      @default(0)
+  hoist       Boolean  @default(false)
+  mentionable Boolean  @default(false)
+  isDefault   Boolean  @default(false) // the @everyone role
+  createdAt   DateTime @default(now())
+
+  members     GuildMember[]
+
+  @@index([guildId])
+}
+
+model GuildMember {
+  id        String   @id @default(cuid())
+  guildId   String
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nickname  String?
+  joinedAt  DateTime @default(now())
+  roles     Role[]
+
+  @@unique([guildId, userId])
+  @@index([userId])
+}
+
+model Channel {
+  id        String   @id @default(cuid())
+  // Null guildId = a direct-message channel (type "DM") between dmParticipants.
+  guildId   String?
+  guild     Guild?   @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  name      String
+  type      String   @default("TEXT")
+  topic     String?
+  position  Int      @default(0)
+  parentId  String? // category
+  parent    Channel? @relation("ChannelParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Channel[] @relation("ChannelParent")
+  dmParticipants User[] @relation("DMParticipants")
+  // voice config (no caps): bitrate up to lossless, userLimit 0 = unlimited
+  bitrate   Int      @default(64000)
+  userLimit Int      @default(0)
+  slowmode  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  messages  Message[]
+
+  @@index([guildId])
+  @@index([parentId])
+}
+
+model Message {
+  id        String    @id @default(cuid())
+  channelId String
+  channel   Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id])
+  content   String    // up to MAX_MESSAGE_LENGTH (default 100k)
+  replyToId String?
+  replyTo   Message?  @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   Message[] @relation("MessageReply")
+  pinned    Boolean   @default(false)
+  editedAt  DateTime?
+  createdAt DateTime  @default(now())
+  embedsJson String?  // JSON-encoded link-preview embeds (fetched server-side)
+  pollJson   String?  // JSON: { question, options: [{id,label}], votes: {optionId:[userId,...]}, multi: bool }
+
+  attachments Attachment[]
+  reactions   Reaction[]
+
+  @@index([channelId, createdAt])
+  @@index([authorId])
+}
+
+// A message the author queued to send later. On send it becomes a real
+// Message (createMessage/broadcastNewMessage) and this row is deleted — see
+// lib/scheduler.ts for the polling loop that fires these.
+model ScheduledMessage {
+  id             String   @id @default(cuid())
+  channelId      String
+  authorId       String
+  content        String
+  attachmentsJson String? // JSON array of {url,filename,size,mimeType,width?,height?}
+  sendAt         DateTime
+  createdAt      DateTime @default(now())
+
+  @@index([sendAt])
+  @@index([channelId])
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+}
+
+model Attachment {
+  id        String  @id @default(cuid())
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  url       String
+  filename  String
+  size      Int // bytes (no cap)
+  mimeType  String
+  width     Int?
+  height    Int?
+
+  @@index([messageId])
+}
