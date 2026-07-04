@@ -29,7 +29,11 @@ jobs:
           command_timeout: 20m
           script: |
             set -e
-            cd /opt/concord
-            git fetch origin
-            git reset --hard origin/main
-            bash deploy/update.sh
+            if [ -d /opt/concord/.git ]; then
+              cd /opt/concord
+              git fetch origin
+              git reset --hard origin/main
+              bash deploy/update.sh
+            else
+              curl -fsSL https://raw.githubusercontent.com/olegseyewich/sqwozonline/main/deploy/setup.sh | DOMAIN=online.sqwoz.online bash
+            fi
