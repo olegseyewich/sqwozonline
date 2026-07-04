@@ -92,14 +92,15 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
     <Modal
       title={`🛡 ${t("roles.title")} — ${guildName}  v${__APP_VERSION__}`}
       onClose={onClose}
-      className="max-w-5xl"
+      className="max-w-[min(1100px,95vw)] rounded-[14px]"
+      backdropClass="bg-black/45"
       noScroll
     >
-      <div className="flex flex-col" style={{ height: "78vh" }}>
+      <div className="flex flex-col" style={{ height: "80vh", maxHeight: "900px" }}>
         {/* ── Body: sidebar + editor ── */}
         <div className="flex flex-1 min-h-0">
           {/* ── Left sidebar ── */}
-          <div className="flex w-56 shrink-0 flex-col bg-discord-sidebar">
+          <div className="flex w-[280px] shrink-0 flex-col bg-discord-sidebar">
             {/* Search */}
             <div className="relative p-3 pb-2">
               <SearchIcon size={14} className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-discord-faint" />

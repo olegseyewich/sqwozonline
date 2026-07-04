@@ -10,6 +10,7 @@ export default function Modal({
   large,
   noScroll,
   className,
+  backdropClass,
 }: {
   title: string;
   onClose: () => void;
@@ -19,6 +20,7 @@ export default function Modal({
   large?: boolean;
   noScroll?: boolean;
   className?: string;
+  backdropClass?: string;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -28,11 +30,11 @@ export default function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      className={`fixed inset-0 z-50 flex items-center justify-center ${backdropClass || "bg-black/70"} p-4`}
       onMouseDown={onClose}
     >
       <div
-        className={`cc-pop w-full overflow-hidden ${className || (large ? "max-w-4xl" : wider ? "max-w-3xl" : wide ? "max-w-2xl" : "max-w-md")} rounded-xl bg-discord-bg shadow-2xl`}
+        className={`cc-pop w-full overflow-hidden ${className || (large ? "max-w-4xl rounded-xl" : wider ? "max-w-3xl rounded-xl" : wide ? "max-w-2xl rounded-xl" : "max-w-md rounded-xl")} bg-discord-bg shadow-2xl`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-black/20 px-5 py-4">
