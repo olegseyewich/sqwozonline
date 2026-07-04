@@ -61,7 +61,7 @@ export default function RolesModal({ guildId, onClose }: { guildId: string; onCl
   }
 
   return (
-    <Modal title={`🛡 ${t("roles.title")}`} onClose={onClose} wider>
+    <Modal title={`🛡 ${t("roles.title")}`} onClose={onClose} large>
       <div className="flex gap-5">
         <div className="w-44 shrink-0">
           <div className="mb-2 text-xs font-bold uppercase tracking-wide text-discord-muted">

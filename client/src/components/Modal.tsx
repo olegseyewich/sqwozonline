@@ -7,12 +7,14 @@ export default function Modal({
   children,
   wide,
   wider,
+  large,
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
   wide?: boolean;
   wider?: boolean;
+  large?: boolean;
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -26,7 +28,7 @@ export default function Modal({
       onMouseDown={onClose}
     >
       <div
-        className={`cc-pop w-full ${wider ? "max-w-3xl" : wide ? "max-w-2xl" : "max-w-md"} rounded-lg bg-discord-bg shadow-2xl`}
+        className={`cc-pop w-full ${large ? "max-w-4xl" : wider ? "max-w-3xl" : wide ? "max-w-2xl" : "max-w-md"} rounded-lg bg-discord-bg shadow-2xl`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-black/20 px-5 py-4">
@@ -35,7 +37,7 @@ export default function Modal({
             <XIcon size={18} />
           </button>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto p-5">{children}</div>
+        <div className="max-h-[80vh] overflow-y-auto p-5">{children}</div>
       </div>
     </div>
   );
